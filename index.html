@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AnonyMark — Marketplace</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <span class="logo"><span class="logo-mark">⬡</span><span class="logo-text">AnonyMark</span></span>
+      <div class="header-status">
+        <div class="header-diag" id="diagBar">
+          <span id="diagNetwork" class="diag-item diag-dot warn" data-tip="Réseau: non connecté"
+            aria-label="Réseau: non connecté"></span>
+          <span id="diagAddress" class="diag-item diag-dot warn" data-tip="Contrat: non vérifié"
+            aria-label="Contrat: non vérifié"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="search-wrapper">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Rechercher un produit…" />
+      </div>
+      <span id="headerRoleBadge" class="role-badge role-guest">Rôle: visiteur</span>
+    </div>
+
+    <div class="header-right">
+      <button id="historyBtn" class="btn-history" title="Historique des transactions">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        Historique
+      </button>
+      <button id="disconnectBtn" class="btn-disconnect hidden" title="Se déconnecter pour changer de wallet">
+        Déconnecter
+      </button>
+      <button id="connectBtn" class="btn-connect">
+        <span id="connectText">Connecter MetaMask</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <div class="hero">
+    <div class="hero-text">
+      <h1>La marketplace <span>décentralisée</span></h1>
+      <p>Achetez et vendez directement sur la blockchain Ethereum, sans intermédiaire.</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    <div class="toolbar">
+      <span id="productCount" class="count-badge">0 produits affichés</span>
+      <span class="count-badge chain-badge" id="chainCount" title="Total enregistré dans le smart contract">
+        ⛓ <span id="chainCountVal">—</span> sur la blockchain
+      </span>
+      <div class="toolbar-actions">
+        <div id="walletInfo" class="wallet-pill hidden">
+          <span class="wallet-pill-balance-label">Solde restant</span>
+          <span id="walletBalance" class="wallet-pill-balance" title="Solde du wallet">— ETH · — €</span>
+        </div>
+        <details id="contractDrawer" class="contract-drawer">
+          <summary class="contract-drawer-toggle">⚙ Contrat</summary>
+          <div class="contract-config">
+            <input id="contractAddressInput" type="text" placeholder="Adresse du contrat (0x...)" />
+            <button id="saveContractBtn" class="btn-mini" title="Appliquer l'adresse">Appliquer</button>
+          </div>
+        </details>
+        <button id="openSellModal" class="btn-sell" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Vendre
+        </button>
+        <button id="refreshBtn" class="btn-icon" title="Rafraîchir">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="filters-panel">
+      <div class="filters-group">
+        <span class="filters-label">Affichage</span>
+        <div class="quick-filters">
+          <button id="filterAll" class="filter-chip active">Tous</button>
+          <button id="filterMine" class="filter-chip">Mes produits</button>
+        </div>
+      </div>
+
+      <div class="filters-group">
+        <span class="filters-label">Catégories</span>
+        <div class="category-filters">
+          <button class="cat-chip active" data-cat="">Toutes catégories</button>
+          <button class="cat-chip" data-cat="0">💻 IT</button>
+          <button class="cat-chip" data-cat="1">💊 Drug</button>
+          <button class="cat-chip" data-cat="2">🔫 Weapon</button>
+          <button class="cat-chip" data-cat="3">🔑 Credentials</button>
+          <button class="cat-chip" data-cat="4">📦 Misc</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="productGrid" class="product-grid">
+      <!-- Cards injected by JS -->
+      <div class="empty-state" id="emptyState">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="8" y="16" width="48" height="36" rx="4" />
+          <path d="M8 24h48" />
+          <path d="M24 16v-4a8 8 0 0 1 16 0v4" />
+        </svg>
+        <p>Aucun produit disponible.<br />Connectez votre wallet pour voir les articles.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Sell Modal -->
+  <div id="sellModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Mettre en vente</h2>
+        <button id="closeSellModal" class="btn-close">✕</button>
+      </div>
+      <form id="sellForm">
+        <div class="form-group">
+          <label>Nom du produit</label>
+          <input type="text" id="productName" placeholder="Ex : Vintage Camera" required />
+        </div>
+        <div class="form-group">
+          <label>Fichier du produit (contenu vendu)</label>
+          <div class="file-upload" id="fileUploadBox">
+            <input class="file-upload-input" type="file" id="productFile"
+              accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.zip,.json,.csv" required />
+            <label for="productFile" class="file-upload-label">
+              <span class="file-upload-icon">📎</span>
+              <span class="file-upload-text">
+                <strong>Cliquer pour sélectionner un fichier</strong>
+                <small id="fileUploadName">Aucun fichier sélectionné</small>
+              </span>
+            </label>
+          </div>
+          <small class="field-hint">Le hash est calculé localement et l'upload est automatique (aucune configuration
+            manuelle requise).</small>
+          <span id="sellFileMeta" class="hash-preview hidden"></span>
+          <div id="sellUploadProgressWrap" class="upload-progress hidden" aria-live="polite">
+            <div class="upload-progress-top">
+              <span id="sellUploadProgressLabel">Préparation du fichier…</span>
+              <span id="sellUploadProgressPct">0%</span>
+            </div>
+            <div class="upload-progress-bar">
+              <span id="sellUploadProgressFill"></span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Catégorie</label>
+          <select id="productCategory" required>
+            <option value="0">💻 IT</option>
+            <option value="1">💊 Drug</option>
+            <option value="2">🔫 Weapon</option>
+            <option value="3">🔑 Credentials</option>
+            <option value="4" selected>📦 Misc</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Prix (ETH)</label>
+            <input type="number" id="productPrice" placeholder="0.01" step="0.0001" min="0" required />
+            <span id="sellEurPreview" class="eur-preview hidden"></span>
+          </div>
+          <div class="form-group">
+            <label>Stock</label>
+            <input type="number" id="productStock" placeholder="1" min="1" required />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" id="sellSubmit">
+          <span id="sellBtnText">Publier l'annonce</span>
+          <span id="sellSpinner" class="spinner hidden"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Buy Confirmation Modal -->
+  <div id="buyModal" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Confirmer l'achat</h2>
+        <button id="closeBuyModal" class="btn-close">✕</button>
+      </div>
+      <div class="buy-confirm-body">
+        <div class="product-preview">
+          <div class="preview-icon">🛒</div>
+          <div>
+            <p class="preview-name" id="buyProductName">—</p>
+            <p class="preview-price" id="buyProductPrice">— ETH</p>
+            <span id="buyProductCategory" class="buy-cat-tag"></span>
+          </div>
+        </div>
+        <p class="buy-note">Cette transaction sera envoyée directement au vendeur via le smart contract.</p>
+        <button id="confirmBuyBtn" class="btn-primary">
+          <span id="buyBtnText">Confirmer & Payer</span>
+          <span id="buySpinner" class="spinner hidden"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Panel -->
+  <div id="historyPanel" class="history-overlay hidden">
+    <div class="history-drawer">
+      <div class="history-header">
+        <h2>⏱ Historique des transactions</h2>
+        <button id="closeHistoryBtn" class="btn-close">✕</button>
+      </div>
+      <div id="historyWalletTag" class="history-wallet-tag"></div>
+
+      <!-- Sous-onglets -->
+      <div class="history-tabs">
+        <button class="hist-tab active" data-tab="txs">Transactions</button>
+        <button class="hist-tab" data-tab="verify">Vérifier un reçu NFT</button>
+      </div>
+
+      <!-- Onglet transactions -->
+      <div id="histTabTxs" class="hist-tab-content">
+        <div id="historyList" class="history-list">
+          <p class="history-empty">Aucune transaction trouvée.</p>
+        </div>
+      </div>
+
+      <!-- Onglet vérification NFT -->
+      <div id="histTabVerify" class="hist-tab-content hidden">
+        <div class="nft-verify-panel">
+          <p class="nft-verify-intro">Vérifiez l'intégrité d'un fichier acheté en comparant son empreinte avec celle
+            stockée on-chain dans votre reçu NFT.</p>
+          <div class="form-group">
+            <label>Token ID du reçu NFT</label>
+            <input type="number" id="verifyTokenId" placeholder="Ex : 3" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Fichier à vérifier</label>
+            <input type="file" id="verifyFile" />
+            <small class="field-hint">Le fichier ne sera jamais envoyé — hash calculé localement.</small>
+          </div>
+          <button id="verifyNftBtn" class="btn-primary">Vérifier l'intégrité</button>
+          <div id="verifyResult" class="verify-result hidden"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
