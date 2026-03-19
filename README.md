@@ -1,3 +1,7 @@
+# ⬡AnonyMark
+
+---
+
 # AnonyMark - Décentralized Marketplace
 
 A secure, privacy-focused Web3 marketplace built on Ethereum (Sepolia testnet) using Ethers.js v6.
