@@ -12,7 +12,7 @@ A secure, privacy-focused Web3 marketplace built on Ethereum (Sepolia testnet) u
 
 - **Wallet Integration**: MetaMask connection for account management
 - **Product Management**: Browse, buy, and sell digital products
-- **Admin Controls**: Product deletion and category management
+- **Admin Controls**: Product deletion 
 - **Transaction History**: Track all purchase and sale transactions
 - **File Verification**: Verify purchased file integrity using NFT receipts
 - **Real-time Sync**: Block listener for instant data updates
@@ -31,14 +31,13 @@ Reference contact code included in `marketContract.sol`.
 
 ### Requirements
 - Modern browser with MetaMask extension
-- Sepolia ETH for transactions
+- Ganache CLI/GUI
 
 ### Running Locally
 
-1. Open `index.html` in your browser
+1. Open a `live-server` in your terminal
 2. Connect your MetaMask wallet
-3. Switch to Sepolia testnet if needed
-4. Browse, buy, or list products
+3. Browse, buy, or list products
 
 No build step or installation required.
 
